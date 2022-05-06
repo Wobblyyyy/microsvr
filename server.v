@@ -157,7 +157,7 @@ pub fn run() ? {
 			continue
 		}
 
-		handle_connection(mut connection, mut cfg, mut cache)
+		go handle_connection(mut connection, cfg, cache)
 	}
 }
 
@@ -193,7 +193,7 @@ pub fn parse_request(mut connection net.TcpConn) http.Request {
 		reader.free()
 	}
 
-	request := http.parse_request(mut reader) or { panic('error parsing request!') }
+	request := http.parse_request(mut reader) or { http.Request{} }
 
 	return request
 }
@@ -232,7 +232,7 @@ fn get_mime_type(file string) string {
 }
 
 // handle_connection handle a connection by giving it a response
-fn handle_connection(mut connection net.TcpConn, mut cfg config.Config, mut cache page_cache.Cache) {
+fn handle_connection(mut connection net.TcpConn, cfg config.Config, cache page_cache.Cache) {
 	connection.set_read_timeout(30 * time.second)
 	connection.set_write_timeout(30 * time.second)
 

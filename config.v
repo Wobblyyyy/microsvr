@@ -21,13 +21,23 @@ pub fn load_config(path string) Config {
 	return json.decode(Config, config_text) or { panic('could not parse config! error: $err') }
 }
 
-pub fn get_all_files(folder_path string) []string {
-	shell_command := 'rg --files $folder_path'
-	command_result := os.execute_or_exit(shell_command)
-	mut files := command_result.output.split('\n')
+pub fn get_all_files(path string) []string {
+	children := os.ls(path) or { panic('could not list children for "$path"!') }
 
-	for i in 0 .. files.len {
-		files[i] = files[i].trim_space()
+	mut files := []string{}
+
+	for i in 0 .. children.len {
+		child := '$path/${children[i]}'
+
+		if os.is_dir(child) {
+			child_children := get_all_files(child)
+
+			for j in 0 .. child_children.len {
+				files << child_children[j]
+			}
+		} else {
+			files << child
+		}
 	}
 
 	return files
