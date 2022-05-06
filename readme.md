@@ -8,14 +8,8 @@ _microsvr_ is an incredibly lightweight and bare-bones web server spawned out
 of my boredom during a physics lecture I don't want to pay attention to.
 
 <h2>Configuration</h2>
+
 A configuration file is required to use _microsvr_. This file must be named
 `microsvrconfig.json` and must be in the same directory as the `microsvr`
 executable. See the `microsvrconfig.json` file in this project for an example
 on how to configure _microsvr_.
-
-<h2>Dependencies</h2>
-As of now, you'll need _ripgrep_ in order to actually use _microsvr_. I'm
-planning on removing the dependency on _ripgrip_ in future versions, but for
-now, make sure you have the `rg` command available.
-
-If you're on Linux, just do `sudo apt install ripgrep`.
