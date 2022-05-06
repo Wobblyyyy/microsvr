@@ -8,32 +8,32 @@ import page_cache
 import io
 
 pub const (
-	config_path   = 'microsvrconfig.json'
-	headers_close = http.new_custom_header_from_map({
+	config_path       = 'microsvrconfig.json'
+	headers_close     = http.new_custom_header_from_map({
 		'Server':                           'microsvr'
 		http.CommonHeader.connection.str(): 'close'
 	}) or { panic('uh oh! this should never happen...') }
-	headers_plain = http.new_header(
+	headers_plain     = http.new_header(
 		key: .content_type
 		value: 'text/plain'
 	).join(headers_close)
 
-	http_302      = http.new_response(
+	http_302          = http.new_response(
 		status: .found
 		text: '302 Found'
 		header: headers_close
 	)
-	http_400      = http.new_response(
+	http_400          = http.new_response(
 		status: .bad_request
 		text: '400 Bad Request'
 		header: headers_plain
 	)
-	http_404      = http.new_response(
+	http_404          = http.new_response(
 		status: .not_found
 		text: '404 Not Found'
 		header: headers_plain
 	)
-	http_500      = http.new_response(
+	http_500          = http.new_response(
 		status: .internal_server_error
 		text: '500 Internal Server Error'
 		header: headers_plain
@@ -41,29 +41,29 @@ pub const (
 	// the most common mime types: this is intentional redundancy. iterating
 	// over a short list is faster
 	common_mime_types = [
-		'.html'
-		'.css'
-		'.js'
-		'.htm'
-		'.ico'
-		'.jpeg'
-		'.jpg'
-		'.json'
-		'.mp3'
-		'.mp4'
-		'.png'
-		'.php'
-		'.svg'
-		'.txt'
-		'.wav'
-		'.webm'
-		'.webp'
-		'.csv'
-		'.ics'
+		'.html',
+		'.css',
+		'.js',
+		'.htm',
+		'.ico',
+		'.jpeg',
+		'.jpg',
+		'.json',
+		'.mp3',
+		'.mp4',
+		'.png',
+		'.php',
+		'.svg',
+		'.txt',
+		'.wav',
+		'.webm',
+		'.webp',
+		'.csv',
+		'.ics',
 	]
 	// note that this is copy-pasted from v's vweb module:
 	// https://github.com/vlang/v/vlib/vweb/vweb.v
-	mime_types    = {
+	mime_types        = {
 		'.aac':    'audio/aac'
 		'.abw':    'application/x-abiword'
 		'.arc':    'application/x-freearc'
@@ -225,7 +225,7 @@ fn get_mime_type(file string) string {
 	// check to see if it's a common type first, because iterating over
 	// a smaller list is always faster
 	if is_common_mime_type(file) || is_mime_type(file) {
-		return mime_types[file]
+		return server.mime_types[file]
 	}
 
 	return 'text/plain'
