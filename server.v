@@ -233,6 +233,10 @@ fn get_mime_type(file string) string {
 	return 'text/plain'
 }
 
+fn get_url(request http.Request) string {
+	return request.url.substr(1, request.url.len)
+}
+
 // handle_connection handle a connection by giving it a response
 fn handle_connection(mut connection net.TcpConn, cfg config.Config, cache page_cache.Cache) {
 	connection.set_read_timeout(30 * time.second)
@@ -243,7 +247,7 @@ fn handle_connection(mut connection net.TcpConn, cfg config.Config, cache page_c
 	}
 
 	request := parse_request(mut connection)
-	url := request.url.substr(1, request.url.len)
+	url := get_url(request)
 	mime_type := get_mime_type(url)
 
 	// if the page is valid, serve the page
