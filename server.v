@@ -253,7 +253,7 @@ fn handle_connection(mut connection net.TcpConn, cfg config.Config, cache page_c
 	} else {
 		if cfg.has_custom_404 {
 			url_404 := cfg.page_not_found_page
-			send_response(mut connection, mime_type, cache.get_page(url_404))
+			send_response(mut connection, 'text/html', cache.get_page(url_404))
 		} else {
 			connection.write(server.http_404.bytes()) or {}
 		}
