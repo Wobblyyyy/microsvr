@@ -24,30 +24,19 @@ pub fn (mut cache Cache) shallow_cache_page(path string) {
 	}
 
 	cache.file_paths << path
-
-	println('shallow cached file $path')
 }
 
 pub fn (mut cache Cache) cache_page(path string) {
 	if !is_valid_file(path) {
-		println('invalid file path: $path')
 		return
 	}
 
 	cache.file_paths << path
 	cache.file_contents[path] = read_file(path)
-
-	println('cached file $path')
 }
 
 // is_page_cached check to see if a page's contents are cached
 pub fn (cache Cache) is_page_cached(path string) bool {
-	keys := cache.file_contents.keys()
-	println('displaying keys...')
-	for i in 0 .. keys.len {
-		key := keys[i]
-		println('- key: $key')
-	}
 	return path in cache.file_contents
 }
 

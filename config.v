@@ -8,6 +8,10 @@ struct Config {
 	folders []string [required]
 	cached_folders []string
 	cached_files []string
+	cache_page_not_found bool = true
+	page_not_found_page string
+mut:
+	has_custom_404 bool
 }
 
 pub fn load_config(path string) Config {
@@ -30,17 +34,21 @@ pub fn get_all_files(folder_path string) []string {
 	return files
 }
 
-pub fn apply_config(mut cache page_cache.Cache, cfg Config) {
+pub fn apply_config(mut cache page_cache.Cache, mut cfg Config) {
 	folders := cfg.folders
 	cached_folders := cfg.cached_folders
 	cached_files := cfg.cached_files
 
-	for i in 0 .. cached_folders.len {
-		f := cached_folders[i]
-		println('cached folder: $f')
+	page_404 := cfg.page_not_found_page
+	if page_404.len > 0 {
+		cfg.has_custom_404 = true
+		if cfg.cache_page_not_found {
+			cache.cache_page(page_404)
+		} else {
+			cache.shallow_cache_page(page_404)
+		}
 	}
 
-	println('applying config...')
 	for i in 0 .. folders.len {
 		folder := folders[i]
 		files := get_all_files(folder)
@@ -48,12 +56,9 @@ pub fn apply_config(mut cache page_cache.Cache, cfg Config) {
 		for j in 0 .. files.len {
 			file := files[j]
 
-			println('file: $file folder: $folder')
-
 			mut should_cache := false
 
 			if folder in cached_folders {
-				println('folder was in cached_folders')
 				should_cache = true
 			}
 

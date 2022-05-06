@@ -43,8 +43,8 @@ pub const (
 
 pub fn run() ? {
 	mut cache := page_cache.Cache{}
-	cfg := config.load_config(server.config_path)
-	config.apply_config(mut cache, cfg)
+	mut cfg := config.load_config(server.config_path)
+	config.apply_config(mut cache, mut cfg)
 	mut listener := net.listen_tcp(.ip6, 'localhost:8080') or {
 		return error('failed to start listener!')
 	}
@@ -100,7 +100,7 @@ pub fn parse_request(mut connection net.TcpConn) http.Request {
 }
 
 // handle_connection handle a connection by giving it a response
-fn handle_connection(mut connection net.TcpConn, mut cache page_cache.Cache) {
+fn handle_connection(mut connection net.TcpConn, mut cfg config.Config, mut cache page_cache.Cache) {
 	connection.set_read_timeout(30 * time.second)
 	connection.set_write_timeout(30 * time.second)
 
@@ -110,10 +110,8 @@ fn handle_connection(mut connection net.TcpConn, mut cache page_cache.Cache) {
 
 	request := parse_request(mut connection)
 	url := request.url.substr(1, request.url.len)
-	println('handling request for URL: $url')
 
 	if cache.is_page_cached(url) {
-		println('url is cached')
 		send_response(mut connection, 'text/html', cache.get_page(url))
 	} else {
 		connection.write(http_404.bytes()) or {}
