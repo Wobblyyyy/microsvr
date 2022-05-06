@@ -11,6 +11,8 @@ pub:
 	cached_files         []string
 	cache_page_not_found bool = true
 	page_not_found_page  string
+	address              string
+	port                 string
 pub mut:
 	has_custom_404 bool
 }

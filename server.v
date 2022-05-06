@@ -147,7 +147,9 @@ pub fn run() ? {
 	mut cache := page_cache.Cache{}
 	mut cfg := config.load_config(server.config_path)
 	config.apply_config(mut cache, mut cfg)
-	mut listener := net.listen_tcp(.ip6, 'localhost:8080') or {
+	address := cfg.address
+	port := cfg.port
+	mut listener := net.listen_tcp(.ip6, '$address:$port') or {
 		return error('failed to start listener!')
 	}
 
