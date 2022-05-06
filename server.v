@@ -1,12 +1,15 @@
 module server
 
+import config
 import time
 import net
 import net.http
 import net.urllib
 import page_cache
+import io
 
 pub const (
+	config_path = 'microsvrconfig.json'
 	headers_close = http.new_custom_header_from_map({
 		'Server':                           'microsvr'
 		http.CommonHeader.connection.str(): 'close'
@@ -40,7 +43,8 @@ pub const (
 
 pub fn run() ? {
 	mut cache := page_cache.Cache{}
-	cache.cache_page('./demo_content/index.html')
+	cfg := config.load_config(server.config_path)
+	config.apply_config(mut cache, cfg)
 	mut listener := net.listen_tcp(.ip6, 'localhost:8080') or {
 		return error('failed to start listener!')
 	}
@@ -55,12 +59,15 @@ pub fn run() ? {
 	}
 }
 
+// send_string_data given a Response, send that response's byte array to the
+// specified connection
 fn send_string_data(mut connection net.TcpConn, response http.Response) {
 	connection.write(response.bytes()) or {
 		panic('there was an issue while sending a string response!')
 	}
 }
 
+// send_response send a response to the specified connection
 pub fn send_response(mut connection net.TcpConn, mimetype string, data string) {
 	header := http.new_header_from_map({
 		http.CommonHeader.content_type: mimetype
@@ -78,6 +85,21 @@ pub fn send_response(mut connection net.TcpConn, mimetype string, data string) {
 	send_string_data(mut connection, response)
 }
 
+pub fn parse_request(mut connection net.TcpConn) http.Request {
+	mut reader := io.new_buffered_reader(reader: connection)
+
+	defer {
+		reader.free()
+	}
+
+	request := http.parse_request(mut reader) or {
+		panic('error parsing request!')
+	}
+
+	return request
+}
+
+// handle_connection handle a connection by giving it a response
 fn handle_connection(mut connection net.TcpConn, mut cache page_cache.Cache) {
 	connection.set_read_timeout(30 * time.second)
 	connection.set_write_timeout(30 * time.second)
@@ -86,16 +108,16 @@ fn handle_connection(mut connection net.TcpConn, mut cache page_cache.Cache) {
 		connection.close() or {}
 	}
 
-	index := http.new_response(
-		status: .found
-		text: cache.get_page('./demo_content/index.html')
-		header: headers_plain
-	)
+	request := parse_request(mut connection)
+	url := request.url.substr(1, request.url.len)
+	println('handling request for URL: $url')
 
-	send_response(mut connection, 'text/html', cache.get_page('./demo_content/index.html'))
-
-	// connection.write(server.http_404.bytes()) or {}
-	connection.write(index.bytes()) or {}
+	if cache.is_page_cached(url) {
+		println('url is cached')
+		send_response(mut connection, 'text/html', cache.get_page(url))
+	} else {
+		connection.write(http_404.bytes()) or {}
+	}
 }
 
 [manualfree]
