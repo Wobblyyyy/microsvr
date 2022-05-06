@@ -4,7 +4,6 @@ import config
 import time
 import net
 import net.http
-import net.urllib
 import page_cache
 import io
 
@@ -39,16 +38,16 @@ pub const (
 		text: '500 Internal Server Error'
 		header: headers_plain
 	)
+	// the most common mime types: this is intentional redundancy. iterating
+	// over a short list is faster
 	common_mime_types = [
-		'.css'
-		'.csv'
-		'.htm'
 		'.html'
+		'.css'
+		'.js'
+		'.htm'
 		'.ico'
-		'.ics'
 		'.jpeg'
 		'.jpg'
-		'.js'
 		'.json'
 		'.mp3'
 		'.mp4'
@@ -59,6 +58,8 @@ pub const (
 		'.wav'
 		'.webm'
 		'.webp'
+		'.csv'
+		'.ics'
 	]
 	// note that this is copy-pasted from v's vweb module:
 	// https://github.com/vlang/v/vlib/vweb/vweb.v
@@ -184,6 +185,7 @@ pub fn send_response(mut connection net.TcpConn, mimetype string, data string) {
 	send_string_data(mut connection, response)
 }
 
+// parse_request parse a http request from a tcp connection
 pub fn parse_request(mut connection net.TcpConn) http.Request {
 	mut reader := io.new_buffered_reader(reader: connection)
 
@@ -196,10 +198,12 @@ pub fn parse_request(mut connection net.TcpConn) http.Request {
 	return request
 }
 
-fn list_contains_ending(endings []string, file string) bool {
+// list_contains_ending does a given array of strings contain the ending
+// of a different string?
+fn list_contains_ending(endings []string, s string) bool {
 	for i in 0 .. endings.len {
 		ending := endings[i]
-		if file.ends_with(ending) {
+		if s.ends_with(ending) {
 			return true
 		}
 	}
@@ -214,7 +218,12 @@ fn is_mime_type(file string) bool {
 	return list_contains_ending(server.mime_types.keys(), file)
 }
 
+// get_mime_type based on a file path, determine that file's mime type
+// if the file has an unrecognized format, this function will return
+// a mime type of "text/plain"
 fn get_mime_type(file string) string {
+	// check to see if it's a common type first, because iterating over
+	// a smaller list is always faster
 	if is_common_mime_type(file) || is_mime_type(file) {
 		return mime_types[file]
 	}
@@ -235,6 +244,8 @@ fn handle_connection(mut connection net.TcpConn, mut cfg config.Config, mut cach
 	url := request.url.substr(1, request.url.len)
 	mime_type := get_mime_type(url)
 
+	// if the page is valid, serve the page
+	// if the page isn't valid, present a 404 response instead
 	if cache.is_page_present(url) {
 		send_response(mut connection, mime_type, cache.get_page(url))
 	} else {
@@ -245,9 +256,4 @@ fn handle_connection(mut connection net.TcpConn, mut cfg config.Config, mut cach
 			connection.write(server.http_404.bytes()) or {}
 		}
 	}
-}
-
-[manualfree]
-fn serve_static(url urllib.URL) bool {
-	return true
 }
