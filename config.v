@@ -5,21 +5,20 @@ import os
 import page_cache
 
 struct Config {
-	folders []string [required]
-	cached_folders []string
-	cached_files []string
+pub:
+	folders              []string [required]
+	cached_folders       []string
+	cached_files         []string
 	cache_page_not_found bool = true
-	page_not_found_page string
-mut:
+	page_not_found_page  string
+pub mut:
 	has_custom_404 bool
 }
 
 pub fn load_config(path string) Config {
 	config_text := page_cache.read_file(path)
 
-	return json.decode(Config, config_text) or {
-		panic('could not parse config! error: $err')
-	}
+	return json.decode(Config, config_text) or { panic('could not parse config! error: $err') }
 }
 
 pub fn get_all_files(folder_path string) []string {

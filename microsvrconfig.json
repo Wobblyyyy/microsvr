@@ -6,5 +6,6 @@
         "demo_content"
     ],
     "cache_page_not_found": true,
-    "page_not_found_page": "demo_content/404.html"
+    "page_not_found_page": "",
+    "-page_not_found_page": "demo_content/404.html"
 }

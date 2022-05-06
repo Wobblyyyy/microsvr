@@ -40,6 +40,10 @@ pub fn (cache Cache) is_page_cached(path string) bool {
 	return path in cache.file_contents
 }
 
+pub fn (cache Cache) is_page_present(path string) bool {
+	return path in cache.file_paths
+}
+
 // get_page get the page and return its contents as a string
 // if the page is cached, return the cached page
 // if the page is not cached, read it and return it
