@@ -18,6 +18,32 @@ pub fn is_valid_file(path string) bool {
 	return os.exists(path)
 }
 
+pub fn (cache Cache) get_children(path string) []string {
+	original_count := path.count('/')
+	mut children := []string{}
+
+	for i in 0 .. cache.file_paths.len {
+		file_path := cache.file_paths[i]
+		if file_path.starts_with(path) {
+			slash_count := file_path.count('/')
+			if slash_count - 1 == original_count {
+				children << file_path
+			}
+		}
+	}
+
+	return children
+}
+
+pub fn (cache Cache) get_parent(input_path string) string {
+	if input_path.len < 1 {
+		return ''
+	}
+	path := input_path.substr(0, input_path.len - 1)
+	last_index := path.last_index('/') or { return '' }
+	return path.substr(0, last_index - 1)
+}
+
 pub fn (mut cache Cache) shallow_cache_page(path string) {
 	if !is_valid_file(path) {
 		return

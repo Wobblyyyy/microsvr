@@ -8,5 +8,6 @@
     "cache_page_not_found": true,
     "page_not_found_page": "demo_content/404.html",
     "address": "localhost",
-    "port": "8080"
+    "port": "8080",
+    "show_file_tree": true
 }

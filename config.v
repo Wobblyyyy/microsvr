@@ -13,6 +13,7 @@ pub:
 	page_not_found_page  string
 	address              string
 	port                 string
+	show_file_tree       bool
 pub mut:
 	has_custom_404 bool
 }

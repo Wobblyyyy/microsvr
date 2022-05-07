@@ -6,6 +6,7 @@ import net
 import net.http
 import page_cache
 import io
+import file_tree
 
 pub const (
 	config_path       = 'microsvrconfig.json'
@@ -200,23 +201,21 @@ pub fn parse_request(mut connection net.TcpConn) http.Request {
 	return request
 }
 
-// list_contains_ending does a given array of strings contain the ending
-// of a different string?
-fn list_contains_ending(endings []string, s string) bool {
+fn list_contains_ending(endings []string, s string) string {
 	for i in 0 .. endings.len {
 		ending := endings[i]
 		if s.ends_with(ending) {
-			return true
+			return ending
 		}
 	}
-	return false
+	return ''
 }
 
-fn is_common_mime_type(file string) bool {
+fn get_common_mime(file string) string {
 	return list_contains_ending(server.common_mime_types, file)
 }
 
-fn is_mime_type(file string) bool {
+fn get_mime(file string) string {
 	return list_contains_ending(server.mime_types.keys(), file)
 }
 
@@ -226,15 +225,29 @@ fn is_mime_type(file string) bool {
 fn get_mime_type(file string) string {
 	// check to see if it's a common type first, because iterating over
 	// a smaller list is always faster
-	if is_common_mime_type(file) || is_mime_type(file) {
-		return server.mime_types[file]
+	common_mime := get_common_mime(file)
+	if common_mime.len > 0 {
+		return server.mime_types[common_mime]
 	}
 
-	return 'text/plain'
+	mime := get_mime(file)
+	if mime.len > 0 {
+		return server.mime_types[mime]
+	}
+
+	return ''
 }
 
 fn get_url(request http.Request) string {
-	return request.url.substr(1, request.url.len)
+	mut ret := request.url.substr(1, request.url.len)
+
+	last_index := ret.last_index('/') or { -99 }
+
+	if last_index == ret.len - 1 {
+		ret = ret.substr(0, ret.len - 1)
+	}
+
+	return ret
 }
 
 // handle_connection handle a connection by giving it a response
@@ -249,6 +262,15 @@ fn handle_connection(mut connection net.TcpConn, cfg config.Config, cache page_c
 	request := parse_request(mut connection)
 	url := get_url(request)
 	mime_type := get_mime_type(url)
+
+	if mime_type.len == 0 {
+		path := url
+		parent := cache.get_parent(url)
+		children := cache.get_children(url)
+		send_response(mut connection, 'text/html', file_tree.get_tree_page(path, parent,
+			children))
+		return
+	}
 
 	// if the page is valid, serve the page
 	// if the page isn't valid, present a 404 response instead
