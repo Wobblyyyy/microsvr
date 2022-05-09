@@ -272,6 +272,8 @@ fn handle_connection(mut connection net.TcpConn, cfg config.Config, cache page_c
 		return
 	}
 
+	println('serving URL: $url')
+
 	// if the page is valid, serve the page
 	// if the page isn't valid, present a 404 response instead
 	if cache.is_page_present(url) {

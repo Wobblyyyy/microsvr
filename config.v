@@ -55,9 +55,9 @@ pub fn apply_config(mut cache page_cache.Cache, mut cfg Config) {
 	if page_404.len > 0 {
 		cfg.has_custom_404 = true
 		if cfg.cache_page_not_found {
-			cache.cache_page(page_404)
+			cache.cache_page(page_404, '')
 		} else {
-			cache.shallow_cache_page(page_404)
+			cache.shallow_cache_page(page_404, '')
 		}
 	}
 
@@ -79,9 +79,9 @@ pub fn apply_config(mut cache page_cache.Cache, mut cfg Config) {
 			}
 
 			if should_cache {
-				cache.cache_page(file)
+				cache.cache_page(file, folder)
 			} else {
-				cache.shallow_cache_page(file)
+				cache.shallow_cache_page(file, folder)
 			}
 		}
 	}

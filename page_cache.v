@@ -44,21 +44,31 @@ pub fn (cache Cache) get_parent(input_path string) string {
 	return path.substr(0, last_index - 1)
 }
 
-pub fn (mut cache Cache) shallow_cache_page(path string) {
-	if !is_valid_file(path) {
-		return
+fn trim_path(path string, folder string) string {
+	if folder.len == 0 {
+		return path
+	} else {
+		return path.substr(folder.len + 1, path.len)
 	}
-
-	cache.file_paths << path
 }
 
-pub fn (mut cache Cache) cache_page(path string) {
+pub fn (mut cache Cache) shallow_cache_page(path string, folder string) {
 	if !is_valid_file(path) {
 		return
 	}
 
-	cache.file_paths << path
-	cache.file_contents[path] = read_file(path)
+	trimmed_path := trim_path(path, folder)
+	cache.file_paths << trimmed_path
+}
+
+pub fn (mut cache Cache) cache_page(path string, folder string) {
+	if !is_valid_file(path) {
+		return
+	}
+
+	trimmed_path := trim_path(path, folder)
+	cache.file_paths << trimmed_path
+	cache.file_contents[trimmed_path] = read_file(path)
 }
 
 // is_page_cached check to see if a page's contents are cached
